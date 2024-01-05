@@ -1,0 +1,17 @@
+name: New Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  test_helm:
+    uses: RicochetStudios/registry/.github/workflows/ci.yml@main
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Release
+        uses: softprops/action-gh-release@v1
