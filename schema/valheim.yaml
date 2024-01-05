@@ -44,6 +44,5 @@ settings:
 volumes:
   - name: data
     path: "/data"
-    class: classic
     size: 10Gi
 probes: null
