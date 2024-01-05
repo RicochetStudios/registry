@@ -37,10 +37,9 @@ type Setting struct {
 }
 
 type Volume struct {
-	Name  string `yaml:"name"`
-	Path  string `yaml:"path"`
-	Class string `yaml:"class"`
-	Size  string `yaml:"size"`
+	Name string `yaml:"name"`
+	Path string `yaml:"path"`
+	Size string `yaml:"size"`
 }
 
 type Probes struct {
