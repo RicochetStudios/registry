@@ -71,6 +71,7 @@ type Schema struct {
 }
 
 // embed all schema files into the binary.
+// this means that the files are available as part of the package when imported.
 //
 //go:embed schema/**.yaml
 var c embed.FS
@@ -78,7 +79,7 @@ var c embed.FS
 // GetSchema gets a game schema from a yaml file and stores it as a Schema.
 func GetSchema(n string) (Schema, error) {
 	// Correct the file name if it does not already end with .yaml.
-	n = GetFileName(n)
+	n = getFileName(n)
 
 	// Load the schema file contents.
 	f, err := c.ReadFile("schema/" + n)
@@ -98,7 +99,7 @@ func GetSchema(n string) (Schema, error) {
 }
 
 // GetFileName corrects a file name if it does not already end with .yaml.
-func GetFileName(n string) string {
+func getFileName(n string) string {
 	s := strings.Split(n, ".")
 
 	if s[len(s)-1] != ".yaml" {
