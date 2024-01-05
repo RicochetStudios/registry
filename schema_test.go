@@ -7,7 +7,7 @@ import (
 )
 
 // Set desired result.
-var want Schema = Schema{
+var exampleSchema Schema = Schema{
 	Name:  "minecraft_java",
 	Image: "itzg/minecraft-server:latest",
 	URL:   "https://github.com/itzg/docker-minecraft-server",
@@ -107,28 +107,27 @@ var want Schema = Schema{
 
 // TestGetSchema tests that GetSchema() will return the correct schema.
 func TestGetSchema(t *testing.T) {
-	// Call the function to test.
-	got, err := GetSchema("minecraft_java.yaml")
-
-	// Error if results are incorrect.
-	if err != nil {
-		t.Fatalf("GetSchema() returned an error: \n%v", err)
+	// Test matrix.
+	var matrix = []struct {
+		name  string
+		input string
+		want  Schema
+	}{
+		{"correct filename", "minecraft_java.yaml", exampleSchema},
+		{"incorrect filename", "minecraft_java", exampleSchema},
 	}
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Fatalf("GetSchema() mismatch (-want +got):\n%s", diff)
-	}
-}
 
-// TestGetSchemaWithoutFileExtension tests that GetSchema() will add the .yaml to a filename if it is missing.
-func TestGetSchemaWithoutFileExtension(t *testing.T) {
-	// Call the function to test.
-	got, err := GetSchema("minecraft_java")
+	// Run tests.
+	for _, test := range matrix {
+		// Call the function to test.
+		got, err := GetSchema(test.input)
 
-	// Error if results are incorrect.
-	if err != nil {
-		t.Fatalf("GetSchema() returned an error: \n%v", err)
-	}
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Fatalf("GetSchema() mismatch (-want +got):\n%s", diff)
+		// Error if results are incorrect.
+		if err != nil {
+			t.Fatalf("GetSchema() returned an error: \n%v", err)
+		}
+		if diff := cmp.Diff(test.want, got); diff != "" {
+			t.Fatalf(`GetSchema() test case "%s" mistmatch (-want +got):\n%s`, test.name, diff)
+		}
 	}
 }
