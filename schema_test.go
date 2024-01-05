@@ -76,10 +76,9 @@ var exampleSchema Schema = Schema{
 	},
 	Volumes: []Volume{
 		{
-			Name:  "data",
-			Path:  "/data",
-			Class: "classic",
-			Size:  "10Gi",
+			Name: "data",
+			Path: "/data",
+			Size: "10Gi",
 		},
 	},
 	Probes: Probes{
