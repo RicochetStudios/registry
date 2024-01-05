@@ -1,0 +1,66 @@
+name: minecraft_java
+image: itzg/minecraft-server:latest
+url: https://github.com/itzg/docker-minecraft-server
+ratio: "1-2"
+sizes:
+  xs:
+    resources:
+      cpu: 1000m
+      memory: 2000Mi
+    players: 8
+  s:
+    resources:
+      cpu: 1500m
+      memory: 4000Mi
+    players: 16
+  m:
+    resources:
+      cpu: 2000m
+      memory: 8000Mi
+    players: 32
+  l:
+    resources:
+      cpu: 3000m
+      memory: 16000Mi
+    players: 64
+  xl:
+    resources:
+      cpu: 4000m
+      memory: 32000Mi
+    players: 128
+network:
+  - name: game
+    port: 25565
+    protocol: tcp
+settings:
+  - name: EULA
+    value: "TRUE"
+  - name: TYPE
+    value: "{{ .modLoader }}"
+  - name: MAX_PLAYERS
+    value: "{{ .players }}"
+  - name: MOTD
+    value: "{{ .name }}"
+volumes:
+  - name: data
+    path: "/data"
+    class: classic
+    size: 10Gi
+probes:
+  command:
+    - mc-health
+  startupProbe:
+    failureThreshold: 30
+    periodSeconds: 10
+  readynessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    failureThreshold: 20
+    successThreshold: 3
+    timeoutSeconds: 1
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    failureThreshold: 20
+    successThreshold: 3
+    timeoutSeconds: 1

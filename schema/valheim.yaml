@@ -1,0 +1,49 @@
+name: valheim
+image: lloesche/valheim-server:latest
+url: https://github.com/lloesche/valheim-server-docker
+ratio: "1-2"
+sizes:
+  xs:
+    resources:
+      cpu: 1000m
+      memory: 2000Mi
+    players: 8
+  s:
+    resources:
+      cpu: 1500m
+      memory: 4000Mi
+    players: 16
+  m:
+    resources:
+      cpu: 2000m
+      memory: 8000Mi
+    players: 32
+  l:
+    resources:
+      cpu: 3000m
+      memory: 16000Mi
+    players: 64
+  xl:
+    resources:
+      cpu: 4000m
+      memory: 32000Mi
+    players: 128
+network:
+  - name: game
+    port: 2456
+    protocol: UDP
+  - name: steam
+    port: 2457
+    protocol: UDP
+settings:
+    # Allows crossplay.
+  - name: SERVER_ARGS
+    value: "-crossplay"
+  - name: SERVER_NAME
+    value: "{{ .Values.name }}"
+volumes:
+  - name: data
+    path: "/data"
+    class: classic
+    size: 10Gi
+probes: null
