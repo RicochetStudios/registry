@@ -1,0 +1,102 @@
+# This is an example specification for a game server schema in the registry.
+# The schema is used to define the configuration of a supported game in the registry.
+
+# The containerised game server image to deploy.
+# Must be a valid image from a public registry.
+image: itzg/minecraft-server
+
+# Optional metadata providing a link to find out more about the image.
+# Must be a valid URL.
+url: https://github.com/itzg/docker-minecraft-server
+
+# The ratio of average cpu:memory consumed by the game server.
+# Provided in the format of "cpu-memory".
+ratio: "1-2"
+
+# The available sizes for the game server.
+# This changes the resources given to the server and the player limit.
+# Sizes available are `xs`, `s`, `m`, `l`, `xl`.
+sizes:
+  xs:
+    # Cpu and memory specify the limits of the resources provided to the server.
+    # The server can run at any amount of resources below and up to this limit, but not above.
+    # Functions identically to and provided as a string of Kubernetes resource units, see:
+    # https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes.
+    resources:
+      cpu: 1000m
+      memory: 2000Mi
+    # The number of players that can be connected to the server at the same time.
+    # Provided as an integer.
+    players: 8
+  s:
+    resources:
+      cpu: 1500m
+      memory: 4000Mi
+    players: 16
+  m:
+    resources:
+      cpu: 2000m
+      memory: 8000Mi
+    players: 32
+  l:
+    resources:
+      cpu: 3000m
+      memory: 16000Mi
+    players: 64
+  xl:
+    resources:
+      cpu: 4000m
+      memory: 32000Mi
+    players: 128
+
+# The default port and protocol the game server runs on.
+network:
+  # Provided as an integer.
+  port: 25565
+  # Provided as a string.
+  protocol: TCP
+
+# Static environment variables specific to the game server image.
+# Can be provided in templating language to use dynamic values.
+# This will be changed in the future to restrict the templating language to a subset of functions.
+settings:
+  - name: EULA
+    value: "TRUE"
+  - name: TYPE
+    value: "{{ .Values.game.modLoader }}"
+  - name: MAX_PLAYERS
+    value: "{{ .size.players }}"
+
+# The storage data of the game server.
+# This is used to persist the game server data between restarts.
+# List any volumes that contain data which needs to be persisted here.
+volumes:
+    # The name of the volume.
+  - name: data
+    # The path of the data.
+    path: "/data"
+    # The maximum size of storage.
+    # Provided as a string of Kubernetes capacity units, see:
+    # https://kubernetes.io/docs/concepts/storage/persistent-volumes/#capacity
+    size: 10Gi
+
+# Health checks for the game server.
+probes:
+  # The commands used to check the status.
+  # These often run binaries.
+  command:
+    - mc-health
+  
+  # The initial delay when starting up the server.
+  startupProbe:
+    failureThreshold: 30
+    periodSeconds: 10
+
+  # Regular checks for game server uptime.
+  # Used for both liveness and readyness.
+  readyLiveProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    failureThreshold: 20
+    successThreshold: 1
+    timeoutSeconds: 1
