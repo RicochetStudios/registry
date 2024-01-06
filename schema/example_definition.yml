@@ -49,12 +49,15 @@ sizes:
       memory: 32000Mi
     players: 128
 
-# The default port and protocol the game server runs on.
+# A list of port and protocols to expose from the game server runs on.
+# This makes the game server accessible from the method is used to connect to it.
 network:
-  # Provided as an integer.
-  port: 25565
-  # Provided as a string.
-  protocol: TCP
+    # The name of the network configuration.
+  - name: game
+    # Provided as an integer.
+    port: 25565
+    # Provided as a string.
+    protocol: TCP
 
 # Static environment variables specific to the game server image.
 # Can be provided in templating language to use dynamic values.
@@ -91,12 +94,19 @@ probes:
   startupProbe:
     failureThreshold: 30
     periodSeconds: 10
-
-  # Regular checks for game server uptime.
-  # Used for both liveness and readyness.
-  readyLiveProbe:
+  
+  # Checks if the game server is ready to accept connections.
+  readynessProbe:
     initialDelaySeconds: 30
     periodSeconds: 5
     failureThreshold: 20
-    successThreshold: 1
+    successThreshold: 3
+    timeoutSeconds: 1
+  
+  # Regular checks for game server uptime.
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    failureThreshold: 20
+    successThreshold: 3
     timeoutSeconds: 1
