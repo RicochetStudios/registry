@@ -92,14 +92,11 @@ var exampleSchema Schema = Schema{
 			PeriodSeconds:       5,
 			FailureThreshold:    20,
 			SuccessThreshold:    3,
-			TimeoutSeconds:      1,
 		},
 		LivenessProbe: Probe{
 			InitialDelaySeconds: 30,
 			PeriodSeconds:       5,
 			FailureThreshold:    20,
-			SuccessThreshold:    3,
-			TimeoutSeconds:      1,
 		},
 	},
 }
