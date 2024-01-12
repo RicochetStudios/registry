@@ -87,7 +87,7 @@ var exampleSchema Schema = Schema{
 			FailureThreshold: 30,
 			PeriodSeconds:    10,
 		},
-		ReadynessProbe: Probe{
+		ReadinessProbe: Probe{
 			InitialDelaySeconds: 30,
 			PeriodSeconds:       5,
 			FailureThreshold:    20,
