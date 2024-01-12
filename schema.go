@@ -70,7 +70,7 @@ type Volume struct {
 type Probes struct {
 	Command        []string `yaml:"command"`        // A list of commands to run to check the health of the game server.
 	StartupProbe   Probe    `yaml:"startupProbe"`   // The startup probe checks if the game server has started correctly.
-	ReadynessProbe Probe    `yaml:"readynessProbe"` // The readyness probe checks if the game server is ready to accept connections.
+	ReadinessProbe Probe    `yaml:"readinessProbe"` // The readiness probe checks if the game server is ready to accept connections.
 	LivenessProbe  Probe    `yaml:"livenessProbe"`  // The liveness probe checks if the game server is still running.
 }
 

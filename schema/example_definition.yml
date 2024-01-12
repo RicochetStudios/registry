@@ -96,7 +96,7 @@ probes:
     periodSeconds: 10
   
   # Checks if the game server is ready to accept connections.
-  readynessProbe:
+  readinessProbe:
     initialDelaySeconds: 30
     periodSeconds: 5
     failureThreshold: 20
