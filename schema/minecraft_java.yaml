@@ -49,14 +49,13 @@ probes:
   command:
     - mc-health
   startupProbe:
+    initialDelaySeconds: 90
     failureThreshold: 30
     periodSeconds: 10
   readinessProbe:
-    initialDelaySeconds: 30
     periodSeconds: 5
     failureThreshold: 20
     successThreshold: 3
   livenessProbe:
-    initialDelaySeconds: 30
     periodSeconds: 5
     failureThreshold: 20
