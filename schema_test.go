@@ -84,19 +84,18 @@ var exampleSchema Schema = Schema{
 	Probes: Probes{
 		Command: []string{"mc-health"},
 		StartupProbe: Probe{
-			FailureThreshold: 30,
-			PeriodSeconds:    10,
+			InitialDelaySeconds: 90,
+			FailureThreshold:    30,
+			PeriodSeconds:       10,
 		},
 		ReadinessProbe: Probe{
-			InitialDelaySeconds: 30,
-			PeriodSeconds:       5,
-			FailureThreshold:    20,
-			SuccessThreshold:    3,
+			PeriodSeconds:    5,
+			FailureThreshold: 20,
+			SuccessThreshold: 3,
 		},
 		LivenessProbe: Probe{
-			InitialDelaySeconds: 30,
-			PeriodSeconds:       5,
-			FailureThreshold:    20,
+			PeriodSeconds:    5,
+			FailureThreshold: 20,
 		},
 	},
 }
