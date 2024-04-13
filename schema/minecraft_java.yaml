@@ -35,6 +35,8 @@ network:
 settings:
   - name: EULA
     value: "TRUE"
+  - name: VERSION
+    value: "{{ .version }}"
   - name: TYPE
     value: "{{ .modLoader }}"
   - name: MAX_PLAYERS

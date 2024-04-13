@@ -124,7 +124,7 @@ func GetSchema(n string) (Schema, error) {
 	return schema, nil
 }
 
-// GetFileName corrects a file name if it does not already end with .yaml.
+// getFileName corrects a file name if it does not already end with .yaml.
 func getFileName(n string) string {
 	s := strings.Split(n, ".")
 
