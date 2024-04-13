@@ -62,6 +62,10 @@ var exampleSchema Schema = Schema{
 			Value: "TRUE",
 		},
 		{
+			Name:  "VERSION",
+			Value: "{{ .version }}",
+		},
+		{
 			Name:  "TYPE",
 			Value: "{{ .modLoader }}",
 		},
