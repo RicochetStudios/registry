@@ -12,7 +12,8 @@ type ServerWrapper interface {
 	Wait() error
 	// Wait returns once the server is ready.
 	Serve(context.Context) error
-	// Stop shuts down the server gracefully, before terminating.
+	// Stop will attempt to shutdown the server gracefully.
+	// Failing that, it will forcefully terminate.
 	Stop()
 	// Status returns the status of the server.
 	Status() (string, error)
