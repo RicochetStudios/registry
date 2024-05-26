@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
 	"context"
@@ -6,12 +6,9 @@ import (
 	"log"
 
 	sdk "agones.dev/agones/sdks/go"
-
-	"github.com/RicochetStudios/registry/service/client"
-	"github.com/RicochetStudios/registry/service/health"
 )
 
-func main() {
+func Run(wrapper ServerWrapper) {
 	// TODO: Allow extra arguments here.
 
 	ctx := context.Background()
@@ -23,18 +20,13 @@ func main() {
 		log.Fatalf("Could not connect to Agones sdk: %v", err)
 	}
 
-	// Initialize the wrapper.
-	fmt.Println("Initializing the server wrapper")
-	wrapper := client.Sample{}
-	fmt.Printf("Initialized the %v server wrapper", wrapper.GameName)
-
-	// Start health check.
-	fmt.Println("Starting health check")
-	go health.DoHealth(&wrapper, s, ctx)
+	// // Start health check.
+	// fmt.Println("Starting health check")
+	// go DoHealth(wrapper, s, ctx)
 
 	// Start the server.
 	fmt.Println("Starting the server")
-	err = wrapper.Start()
+	err = wrapper.Start(ctx)
 	if err != nil {
 		log.Fatalf("Failed to start the server: %v", err)
 	}
@@ -46,10 +38,11 @@ func main() {
 	if err = wrapper.Wait(); err != nil {
 		log.Fatalf("Server failed to reach ready state: %v", err)
 	}
+	s.Ready()
 
-	// Serve to clients.
-	fmt.Println("Serving the server")
-	if err = wrapper.Serve(ctx); err != nil {
-		log.Fatalf("Server failed to serve: %v", err)
-	}
+	// // Serve to clients.
+	// fmt.Println("Serving the server")
+	// if err = wrapper.Serve(ctx); err != nil {
+	// 	log.Fatalf("Server failed to serve: %v", err)
+	// }
 }

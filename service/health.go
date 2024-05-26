@@ -1,4 +1,4 @@
-package health
+package service
 
 import (
 	"context"
@@ -6,12 +6,10 @@ import (
 	"time"
 
 	sdk "agones.dev/agones/sdks/go"
-
-	"github.com/RicochetStudios/registry/service/client"
 )
 
 // doHealth sends the regular Health Pings
-func DoHealth(w client.ServerWrapper, sdk *sdk.SDK, ctx context.Context) {
+func DoHealth(w ServerWrapper, sdk *sdk.SDK, ctx context.Context) {
 	tick := time.NewTicker(2 * time.Second)
 	for {
 		healthy, err := w.Healthy()

@@ -1,0 +1,12 @@
+version: '3'
+services:
+  gameserver:
+    build: . # <path to build context>
+    ports:
+      - "127.0.0.1:25565:25565"
+
+  sdk-server:
+    image: "us-docker.pkg.dev/agones-images/release/agones-sdk:1.40.0"
+    command: --local
+    network_mode: service:gameserver # <shared network between sdk and game server>
+    
