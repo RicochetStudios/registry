@@ -8,10 +8,18 @@ import (
 	sdk "agones.dev/agones/sdks/go"
 )
 
+const healthInterval = 2
+
 // doHealth sends the regular Health Pings
 func DoHealth(w ServerWrapper, sdk *sdk.SDK, ctx context.Context) {
-	tick := time.NewTicker(2 * time.Second)
+	tick := time.NewTicker(healthInterval * time.Second)
 	for {
+		// If the context is cancelled, stop the health check.
+		if ctx.Err() != nil {
+			return
+		}
+
+		// Check if the server is healthy.
 		healthy, err := w.Healthy()
 		if err != nil {
 			log.Fatalf("[wrapper] Could not check health status, %v", err)

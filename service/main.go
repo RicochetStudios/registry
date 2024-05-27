@@ -41,7 +41,7 @@ func Run(wrapper ServerWrapper) {
 	go DoHealth(wrapper, s, ctx)
 
 	// Serve to clients.
-	fmt.Println("Serving the server")
+	fmt.Println("Beginning to serve")
 	if err = wrapper.Serve(ctx); err != nil {
 		log.Fatalf("Server failed to serve: %v", err)
 	}
