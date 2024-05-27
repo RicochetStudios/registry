@@ -11,7 +11,7 @@ FROM itzg/minecraft-server:stable
 
 # Copy the wrapper from the builder stage.
 COPY --from=builder /go/src/ricochet/minecraft_java/wrapper /wrapper
-RUN chmod +x wrapper
+RUN chmod +x /wrapper
 
-ENTRYPOINT /wrapper
+ENTRYPOINT ["/wrapper"]
 HEALTHCHECK --start-period=1m --interval=5s --retries=24 CMD /wrapper -health

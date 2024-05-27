@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -19,13 +21,15 @@ type MinecraftJava struct {
 	Ready  bool
 	Ctx    context.Context
 	Cancel context.CancelFunc
+	Stdout bytes.Buffer
+	Stderr bytes.Buffer
 }
 
 var GameWrapper MinecraftJava = MinecraftJava{}
 
 func main() {
 	// Define the health flag.
-	health := flag.Bool("start", false, "Check the health of the server")
+	health := flag.Bool("health", false, "Check the health of the server")
 	flag.Parse()
 
 	if *health {
@@ -47,15 +51,51 @@ func main() {
 	service.Run(&GameWrapper)
 }
 
-const startScript = "/start"
-
 // Start starts the server in the background.
 func (m *MinecraftJava) Start(ctx context.Context) error {
+	const (
+		startShell  = "/bin/bash"
+		startScript = "/start"
+	)
+
 	// Create a context for the server.
 	m.Ctx, m.Cancel = context.WithCancel(ctx)
 
 	// Assign the command to the server.
-	m.Cmd = exec.CommandContext(m.Ctx, "/bin/sh", startScript)
+	m.Cmd = exec.CommandContext(m.Ctx, startShell, startScript)
+
+	m.Cmd.Cancel = func() error {
+		m.Stop()
+		if err := m.Cmd.Process.Release(); err != nil {
+			return fmt.Errorf("failed to release server process: %v", err)
+		}
+		return nil
+	}
+
+	// The number of ready statements required.
+	var readyCount int = 0
+
+	// Intercept the stdout to check if the server is ready.
+	m.Cmd.Stderr = io.MultiWriter(&m.Stderr, &service.Interceptor{Forward: os.Stderr})
+	m.Cmd.Stdout = io.MultiWriter(&m.Stdout, &service.Interceptor{
+		Forward: os.Stdout,
+		Intercept: func(p []byte) {
+			if readyCount >= 1 {
+				return
+			}
+
+			str := strings.TrimSpace(string(p))
+			// Minecraft Java will say "[Server] Startup Done" once ready.
+			if count := strings.Count(str, `For help, type "help"`); count > 0 {
+				readyCount += count
+				fmt.Printf("Found ready statement: %d \n", readyCount)
+
+				if readyCount <= 1 {
+					fmt.Printf("Moving to READY: %s \n", str)
+					m.Ready = true
+				}
+			}
+		}})
 
 	// Start the server.
 	err := m.Cmd.Start()
@@ -68,31 +108,6 @@ func (m *MinecraftJava) Start(ctx context.Context) error {
 
 // Wait returns once the server is ready.
 func (m *MinecraftJava) Wait() error {
-	// The number of ready statements required.
-	var readyCount int = 0
-
-	// Intercept the stdout to check if the server is ready.
-	m.Cmd.Stderr = &service.Interceptor{Forward: os.Stderr}
-	m.Cmd.Stdout = &service.Interceptor{
-		Forward: os.Stdout,
-		Intercept: func(p []byte) {
-			if readyCount >= 1 {
-				return
-			}
-
-			str := strings.TrimSpace(string(p))
-			// Minecraft Java will say "[Server] Startup Done" once ready.
-			if count := strings.Count(str, "[Server] Startup Done"); count > 0 {
-				readyCount += count
-				fmt.Printf("Found ready statement: %d \n", readyCount)
-
-				if readyCount == 4 {
-					fmt.Printf("Moving to READY: %s \n", str)
-					m.Ready = true
-				}
-			}
-		}}
-
 	// The maximum time to wait for the server to be ready.
 	// TODO: Review this value.
 	const readyTimeout = 120
@@ -102,6 +117,7 @@ func (m *MinecraftJava) Wait() error {
 		if m.Ready {
 			return nil
 		}
+		time.Sleep(1 * time.Second)
 	}
 
 	// TODO: Add a more descriptive error message, with stdout and stderr.
@@ -110,14 +126,20 @@ func (m *MinecraftJava) Wait() error {
 
 // Serve serves the server to clients.
 func (m *MinecraftJava) Serve(context.Context) error {
+	// Wait for the server to exit.
+	if err := m.Cmd.Wait(); err != nil {
+		return fmt.Errorf("server crashed: %v", err)
+	}
+
 	return nil
 }
 
 // Stop will attempt to shutdown the server gracefully.
 // Failing that, it will forcefully terminate.
 func (m *MinecraftJava) Stop() {
-	const stopSoftTimeout = 5
-	const stopHardTimeout = 10
+	fmt.Println("Stopping the server")
+	const stopSoftTimeout = 10
+	const stopHardTimeout = stopSoftTimeout + 5
 
 	// Cancel the context to release the server process.
 	// This is a last resort.
@@ -129,6 +151,8 @@ func (m *MinecraftJava) Stop() {
 	// Attempt to backup the server before stopping.
 	if err := m.Backup(); err != nil {
 		fmt.Printf("Failed to backup server: %v", err)
+	} else {
+		fmt.Println("Server backed up successfully")
 	}
 
 	// Attempt to stop the server gracefully
@@ -143,16 +167,21 @@ func (m *MinecraftJava) Stop() {
 			fmt.Println("Server stopped gracefully")
 			return
 		}
+		time.Sleep(1 * time.Second)
 	}
 	fmt.Printf("Server failed to stop gracefully within soft timeout of %d seconds", stopSoftTimeout)
 
 	// If the server has not stopped, forcefully terminate it.
 	if err := m.Cmd.Process.Kill(); err != nil {
 		fmt.Printf("Failed to stop server forcefully: %v", err)
+	} else {
+		// Wait for the server to exit.
+		m.Cmd.Wait()
+		fmt.Println("Server stopped forcefully")
+		return
 	}
 
-	// Wait for the server to exit.
-	m.Cmd.Wait()
+	fmt.Printf("Server failed to stop forcefully, releasing resources")
 }
 
 // Status returns the status of the server.
@@ -162,15 +191,26 @@ func (m *MinecraftJava) Status() (string, error) {
 
 // Healthy returns if the server is healthy.
 func (m *MinecraftJava) Healthy() (bool, error) {
-	const healthTimeout = 5
+	const (
+		healthTimeout = 5
+		healthShell   = "/bin/bash"
+		healthScript  = "/health.sh"
+	)
 
 	// Create a context to cancel the health check after a timeout.
-	ctx, cancel := context.WithTimeout(context.Background(), healthTimeout*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), healthTimeout*time.Second)
 	defer cancel()
 
 	// Check if the server is healthy,
 	// by sending a command to the mc-health binary.
-	cmd := exec.CommandContext(ctx, "/bin/sh", "/mc-health")
+	cmd := exec.CommandContext(ctx, healthShell, healthScript)
+
+	// var (
+	// 	stderr bytes.Buffer
+	// 	stdout bytes.Buffer
+	// )
+	// cmd.Stderr = io.MultiWriter(&stderr, os.Stderr)
+	// cmd.Stdout = io.MultiWriter(&stdout, os.Stdout)
 
 	// Run the command.
 	if err := cmd.Run(); err != nil {
