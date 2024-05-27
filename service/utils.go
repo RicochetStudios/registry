@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"os/signal"
@@ -30,6 +31,7 @@ func newSignalContext() context.Context {
 		sig := make(chan os.Signal, 2)
 		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		<-sig
+		fmt.Printf("Received signal: %v", sig)
 		cancel()
 	}()
 	return ctx
