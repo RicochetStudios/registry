@@ -35,7 +35,7 @@ func main() {
 	if *health {
 		healthy, err := GameWrapper.Healthy()
 		if err != nil {
-			fmt.Printf("Health check failed: %v", err)
+			fmt.Printf("Health check failed: %v\n", err)
 			os.Exit(1)
 		}
 
@@ -150,7 +150,7 @@ func (m *MinecraftJava) Stop() {
 
 	// Attempt to backup the server before stopping.
 	if err := m.Backup(); err != nil {
-		fmt.Printf("Failed to backup server: %v", err)
+		fmt.Printf("Failed to backup server: %v\n", err)
 	} else {
 		fmt.Println("Server backed up successfully")
 	}
@@ -158,7 +158,7 @@ func (m *MinecraftJava) Stop() {
 	// Attempt to stop the server gracefully
 	// by sending an interrupt signal.
 	if err := m.Cmd.Process.Signal(os.Interrupt); err != nil {
-		fmt.Printf("Failed to stop server gracefully: %v", err)
+		fmt.Printf("Failed to stop server gracefully: %v\n", err)
 	}
 
 	// Check if the server has stopped in the timeout.
@@ -169,11 +169,11 @@ func (m *MinecraftJava) Stop() {
 		}
 		time.Sleep(1 * time.Second)
 	}
-	fmt.Printf("Server failed to stop gracefully within soft timeout of %d seconds", stopSoftTimeout)
+	fmt.Printf("Server failed to stop gracefully within soft timeout of %d seconds\n", stopSoftTimeout)
 
 	// If the server has not stopped, forcefully terminate it.
 	if err := m.Cmd.Process.Kill(); err != nil {
-		fmt.Printf("Failed to stop server forcefully: %v", err)
+		fmt.Printf("Failed to stop server forcefully: %v\n", err)
 	} else {
 		// Wait for the server to exit.
 		m.Cmd.Wait()
@@ -181,7 +181,7 @@ func (m *MinecraftJava) Stop() {
 		return
 	}
 
-	fmt.Printf("Server failed to stop forcefully, releasing resources")
+	fmt.Printf("Server failed to stop forcefully, releasing resources\n")
 }
 
 // Status returns the status of the server.
@@ -204,13 +204,6 @@ func (m *MinecraftJava) Healthy() (bool, error) {
 	// Check if the server is healthy,
 	// by sending a command to the mc-health binary.
 	cmd := exec.CommandContext(ctx, healthShell, healthScript)
-
-	// var (
-	// 	stderr bytes.Buffer
-	// 	stdout bytes.Buffer
-	// )
-	// cmd.Stderr = io.MultiWriter(&stderr, os.Stderr)
-	// cmd.Stdout = io.MultiWriter(&stdout, os.Stdout)
 
 	// Run the command.
 	if err := cmd.Run(); err != nil {

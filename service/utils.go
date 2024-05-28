@@ -31,7 +31,7 @@ func newSignalContext() context.Context {
 		sig := make(chan os.Signal, 2)
 		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 		<-sig
-		fmt.Printf("Received signal: %v", sig)
+		fmt.Printf("Received signal: %v\n", sig)
 		cancel()
 	}()
 	return ctx
