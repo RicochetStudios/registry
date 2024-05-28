@@ -11,7 +11,9 @@ func Run(wrapper ServerWrapper) {
 	// TODO: Allow extra arguments here.
 
 	// Create a context that is cancelled when an interrupt or term signal is received.
-	ctx := newSignalContext()
+	ctx, cancel := newSignalContext()
+	// Stop the server when the program ends.
+	defer cancel()
 
 	// Connect to agones SDK.
 	fmt.Println("Connecting to Agones with the SDK")
@@ -27,7 +29,7 @@ func Run(wrapper ServerWrapper) {
 		log.Fatalf("Failed to start the server: %v", err)
 	}
 	// Stop the server when the program ends.
-	defer wrapper.Stop()
+	// defer wrapper.Stop()
 
 	// Wait for the server to be ready.
 	fmt.Println("Waiting for the server to be ready")

@@ -25,7 +25,7 @@ func (i *Interceptor) Write(p []byte) (n int, err error) {
 }
 
 // newSignalContext creates a new context that is cancelled when an interrupt or term signal is received.
-func newSignalContext() context.Context {
+func newSignalContext() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		sig := make(chan os.Signal, 2)
@@ -34,5 +34,5 @@ func newSignalContext() context.Context {
 		fmt.Printf("Received signal: %v\n", sig)
 		cancel()
 	}()
-	return ctx
+	return ctx, cancel
 }

@@ -137,6 +137,11 @@ func (m *MinecraftJava) Serve(context.Context) error {
 // Stop will attempt to shutdown the server gracefully.
 // Failing that, it will forcefully terminate.
 func (m *MinecraftJava) Stop() {
+	// Check if the server is already stopped.
+	if m.Cmd.ProcessState != nil && m.Cmd.ProcessState.Exited() {
+		return
+	}
+
 	fmt.Println("Stopping the server")
 	const stopSoftTimeout = 10
 	const stopHardTimeout = stopSoftTimeout + 5
@@ -145,7 +150,11 @@ func (m *MinecraftJava) Stop() {
 	// This is a last resort.
 	go func() {
 		time.Sleep(stopHardTimeout * time.Second)
-		m.Cancel()
+
+		// Cancel the context if not already done.
+		if m.Cancel != nil {
+			m.Cancel()
+		}
 	}()
 
 	// Attempt to backup the server before stopping.
@@ -163,6 +172,7 @@ func (m *MinecraftJava) Stop() {
 
 	// Check if the server has stopped in the timeout.
 	for i := 0; i < stopSoftTimeout; i++ {
+		// Check if the server has stopped.
 		if m.Cmd.ProcessState != nil && m.Cmd.ProcessState.Exited() {
 			fmt.Println("Server stopped gracefully")
 			return
@@ -181,7 +191,7 @@ func (m *MinecraftJava) Stop() {
 		return
 	}
 
-	fmt.Printf("Server failed to stop forcefully, releasing resources\n")
+	fmt.Printf("Releasing server resources\n")
 }
 
 // Status returns the status of the server.
