@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/RicochetStudios/registry/service"
@@ -138,19 +139,19 @@ func (m *MinecraftJava) Stop() {
 	if m.Cmd.ProcessState != nil {
 		return
 	}
-
 	fmt.Println("Stopping the server")
+
 	const stopSoftTimeout = 5
 	const stopHardTimeout = stopSoftTimeout + 5
 
-	// // Release the server process after a timeout.
-	// // This is a last resort to prevent a zombie process.
-	// go func() {
-	// 	time.Sleep(stopHardTimeout * time.Second)
-	// 	if err := m.Cmd.Process.Release(); err != nil {
-	// 		fmt.Printf("failed to release server process: %v\n", err)
-	// 	}
-	// }()
+	// Release the server process after a timeout.
+	// This is a last resort to prevent a zombie process.
+	go func() {
+		time.Sleep(stopHardTimeout * time.Second)
+		if err := m.Cmd.Process.Release(); err != nil {
+			fmt.Printf("failed to release server process: %v\n", err)
+		}
+	}()
 
 	// Attempt to backup the server before stopping.
 	if err := m.Backup(); err != nil {
@@ -160,16 +161,21 @@ func (m *MinecraftJava) Stop() {
 	}
 
 	// Attempt to stop the server gracefully
-	// by sending an interrupt signal.
-	if err := m.Cmd.Process.Signal(os.Interrupt); err != nil {
+	// by sending a terminating signal.
+	//
+	// It's important to use a terminating signal,
+	// as most applications recognize this signal and,
+	// the exec cmd will exit correctly.
+	if err := m.Cmd.Process.Signal(syscall.SIGTERM); err != nil {
 		fmt.Printf("Failed to stop server gracefully: %v\n", err)
 	}
 
 	// Check if the server has stopped in the timeout.
 	for i := 0; i < stopSoftTimeout; i++ {
 		// Check if the server has stopped.
-		// TODO: Check if m.Cmd.ProcessState.Exited() is neeeded.
-		if m.Cmd.ProcessState != nil {
+		// ProcessState.Exited() will only return true if
+		// the process was killed or a SIGTERM was sent.
+		if m.Cmd.ProcessState != nil && m.Cmd.ProcessState.Exited() {
 			fmt.Printf("Server stopped gracefully after %d seconds\n", i)
 			return
 		}
