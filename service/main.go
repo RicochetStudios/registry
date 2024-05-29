@@ -47,4 +47,5 @@ func Run(wrapper ServerWrapper) {
 	if err = wrapper.Serve(ctx); err != nil {
 		log.Fatalf("Server failed to serve: %v", err)
 	}
+	fmt.Println("Stopping serve")
 }

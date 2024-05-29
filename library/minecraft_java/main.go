@@ -62,15 +62,12 @@ func (m *MinecraftJava) Start(ctx context.Context) error {
 	m.Ctx, m.Cancel = context.WithCancel(ctx)
 
 	// Assign the command to the server.
-	m.Cmd = exec.CommandContext(m.Ctx, startShell, startScript)
-
-	m.Cmd.Cancel = func() error {
+	m.Cmd = exec.Command(startShell, startScript)
+	// If the context is cancelled, stop the server.
+	go func() {
+		<-m.Ctx.Done()
 		m.Stop()
-		if err := m.Cmd.Process.Release(); err != nil {
-			return fmt.Errorf("failed to release server process: %v", err)
-		}
-		return nil
-	}
+	}()
 
 	// The number of ready statements required.
 	var readyCount int = 0
@@ -138,24 +135,22 @@ func (m *MinecraftJava) Serve(context.Context) error {
 // Failing that, it will forcefully terminate.
 func (m *MinecraftJava) Stop() {
 	// Check if the server is already stopped.
-	if m.Cmd.ProcessState != nil && m.Cmd.ProcessState.Exited() {
+	if m.Cmd.ProcessState != nil {
 		return
 	}
 
 	fmt.Println("Stopping the server")
-	const stopSoftTimeout = 10
+	const stopSoftTimeout = 5
 	const stopHardTimeout = stopSoftTimeout + 5
 
-	// Cancel the context to release the server process.
-	// This is a last resort.
-	go func() {
-		time.Sleep(stopHardTimeout * time.Second)
-
-		// Cancel the context if not already done.
-		if m.Cancel != nil {
-			m.Cancel()
-		}
-	}()
+	// // Release the server process after a timeout.
+	// // This is a last resort to prevent a zombie process.
+	// go func() {
+	// 	time.Sleep(stopHardTimeout * time.Second)
+	// 	if err := m.Cmd.Process.Release(); err != nil {
+	// 		fmt.Printf("failed to release server process: %v\n", err)
+	// 	}
+	// }()
 
 	// Attempt to backup the server before stopping.
 	if err := m.Backup(); err != nil {
@@ -173,8 +168,9 @@ func (m *MinecraftJava) Stop() {
 	// Check if the server has stopped in the timeout.
 	for i := 0; i < stopSoftTimeout; i++ {
 		// Check if the server has stopped.
-		if m.Cmd.ProcessState != nil && m.Cmd.ProcessState.Exited() {
-			fmt.Println("Server stopped gracefully")
+		// TODO: Check if m.Cmd.ProcessState.Exited() is neeeded.
+		if m.Cmd.ProcessState != nil {
+			fmt.Printf("Server stopped gracefully after %d seconds\n", i)
 			return
 		}
 		time.Sleep(1 * time.Second)
