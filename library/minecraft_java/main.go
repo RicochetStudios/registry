@@ -108,7 +108,7 @@ func (m *MinecraftJava) Start(ctx context.Context) error {
 func (m *MinecraftJava) Wait() error {
 	// The maximum time to wait for the server to be ready.
 	// TODO: Review this value.
-	const readyTimeout = 120
+	const readyTimeout = 90
 
 	// Wait for the server to be ready.
 	for i := 0; i < readyTimeout; i++ {
@@ -141,7 +141,7 @@ func (m *MinecraftJava) Stop() {
 	}
 	fmt.Println("Stopping the server")
 
-	const stopSoftTimeout = 5
+	const stopSoftTimeout = 10
 	const stopHardTimeout = stopSoftTimeout + 5
 
 	// Release the server process after a timeout.
