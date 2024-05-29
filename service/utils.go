@@ -28,10 +28,10 @@ func (i *Interceptor) Write(p []byte) (n int, err error) {
 func newSignalContext() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
-		sig := make(chan os.Signal, 2)
-		signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-		<-sig
-		fmt.Printf("Received signal: %v\n", sig)
+		sigChan := make(chan os.Signal, 2)
+		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+		sig := <-sigChan
+		fmt.Printf("Received signal: '%s'\n", sig.String())
 		cancel()
 	}()
 	return ctx, cancel
