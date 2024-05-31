@@ -40,7 +40,7 @@ func newSignalContext() (context.Context, context.CancelFunc) {
 
 // newReadyInterceptor creates a new Interceptor that will check for a ready message in the output.
 // It will send a message to the ready channel when the ready message is found.
-func NewReadyInterceptor(m string, c int, r *bool) *Interceptor {
+func NewReadyInterceptor(m string, c int, r chan bool) *Interceptor {
 	return &Interceptor{
 		Forward: os.Stdout,
 		Intercept: func(p []byte) {
@@ -56,13 +56,8 @@ func NewReadyInterceptor(m string, c int, r *bool) *Interceptor {
 
 				if c <= 1 {
 					fmt.Printf("Moving to READY: %s \n", str)
-					r = Pointer(true)
+					r <- true
 				}
 			}
 		}}
-}
-
-// Pointer returns a pointer to the data.
-func Pointer[T any](d T) *T {
-	return &d
 }

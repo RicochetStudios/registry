@@ -15,7 +15,7 @@ import (
 // It contains the necessary information to start, stop, and interact with a Minecraft Java server.
 type BasicWrapper struct {
 	Cmd    *exec.Cmd
-	Ready  bool
+	Ready  chan bool
 	Ctx    context.Context
 	Cancel context.CancelFunc
 	Stdout bytes.Buffer
@@ -46,7 +46,7 @@ func (m *BasicWrapper) Start(ctx context.Context) error {
 	// Intercept the stdout to check if the server is ready.
 	m.Cmd.Stderr = io.MultiWriter(&m.Stderr, &Interceptor{Forward: os.Stderr})
 	m.Cmd.Stdout = io.MultiWriter(&m.Stdout,
-		NewReadyInterceptor(`For help, type "help"`, readyCount, &m.Ready))
+		NewReadyInterceptor(`For help, type "help"`, readyCount, m.Ready))
 
 	// m.Cmd.Stdout = io.MultiWriter(&m.Stdout, &Interceptor{
 	// 	Forward: os.Stdout,
@@ -83,13 +83,24 @@ func (m *BasicWrapper) Wait() error {
 	// TODO: Review this value.
 	const readyTimeout = 90
 
-	// Wait for the server to be ready.
-	for i := 0; i < readyTimeout; i++ {
-		if m.Ready {
-			return nil
-		}
-		time.Sleep(1 * time.Second)
+	go func() {
+		time.Sleep(readyTimeout * time.Second)
+		m.Ready <- false
+	}()
+
+	if <-m.Ready {
+		return nil
 	}
+
+	// Wait for the server to be ready.
+
+	// // Wait for the server to be ready.
+	// for i := 0; i < readyTimeout; i++ {
+	// 	if m.Ready {
+	// 		return nil
+	// 	}
+	// 	time.Sleep(1 * time.Second)
+	// }
 
 	// TODO: Add a more descriptive error message, with stdout and stderr.
 	return fmt.Errorf("server failed to reach ready state within timeout of %d seconds", readyTimeout)
