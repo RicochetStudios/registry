@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 )
 
 // ServerWrapper is an interface that provides common operations with the server.
@@ -25,4 +26,34 @@ type ServerWrapper interface {
 	Logs() (string, error)
 	// Backup invokes a backup of the server.
 	Backup() error
+}
+
+// StartProccess is a struct that contains the shell and script
+// used to start the server.
+type StartProccess struct {
+	Shell  string
+	Script string
+}
+
+// HealthProccess is a struct that contains the shell and script
+// used to check the health of the server.
+type HealthProccess struct {
+	Shell  string
+	Script string
+}
+
+// ReadyCondition is a struct that contains the message to check
+// for in the output, and the number of times it should appear,
+// before the server is considered ready.
+type ReadyCondition struct {
+	Message string
+	Count   int
+}
+
+// ServerTimeouts is a struct that contains the timeouts for the server.
+type ServerTimeouts struct {
+	ReadyTimeout    time.Duration // Time to wait for the server to be ready when starting.
+	StopSoftTimeout time.Duration // Time to wait for the server to stop gracefully.
+	StopHardTimeout time.Duration // Time to wait for the server to stop forcefully.
+	HealthTimeout   time.Duration // Time to wait for the server to check health.
 }

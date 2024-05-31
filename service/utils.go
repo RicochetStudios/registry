@@ -41,20 +41,23 @@ func newSignalContext() (context.Context, context.CancelFunc) {
 // newReadyInterceptor creates a new Interceptor that will check for a ready message in the output.
 // It will send a message to the ready channel when the ready message is found.
 func NewReadyInterceptor(m string, c int, r chan bool) *Interceptor {
+	// The number of ready statements required.
+	var counter int = 0
+
 	return &Interceptor{
 		Forward: os.Stdout,
 		Intercept: func(p []byte) {
-			if c >= 1 {
+			if counter >= c {
 				return
 			}
 
 			str := strings.TrimSpace(string(p))
 			// Checks if the ready message is in the output.
 			if i := strings.Count(str, m); i > 0 {
-				c += i
-				fmt.Printf("Found ready statement: %d \n", c)
+				counter += i
+				fmt.Printf("Found ready statement: %d \n", counter)
 
-				if c <= 1 {
+				if counter >= c {
 					fmt.Printf("Moving to READY: %s \n", str)
 					r <- true
 				}

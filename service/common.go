@@ -12,7 +12,8 @@ import (
 )
 
 // BasicWrapper is a struct that implements the ServerWrapper interface.
-// It contains the necessary information to start, stop, and interact with a Minecraft Java server.
+// It contains the necessary information to start, stop, and interact with
+// common, basic dedicated video game server.
 type BasicWrapper struct {
 	Cmd    *exec.Cmd
 	Ready  chan bool
@@ -20,17 +21,33 @@ type BasicWrapper struct {
 	Cancel context.CancelFunc
 	Stdout bytes.Buffer
 	Stderr bytes.Buffer
+
+	StartProccess  StartProccess
+	HealthProccess HealthProccess
+	ReadyCondition ReadyCondition
+	Timeouts       ServerTimeouts
+}
+
+// init initializes the server object.
+func (m *BasicWrapper) init(ctx context.Context) {
+	// Create a context for the server.
+	m.Ctx, m.Cancel = context.WithCancel(ctx)
+
+	// Create a channel to check if the server is ready.
+	m.Ready = make(chan bool, 1)
 }
 
 // Start starts the server in the background.
 func (m *BasicWrapper) Start(ctx context.Context) error {
-	const (
-		startShell  = "/bin/bash"
-		startScript = "/start"
+	var (
+		startShell   = m.StartProccess.Shell
+		startScript  = m.StartProccess.Script
+		readyMessage = m.ReadyCondition.Message
+		readyCount   = m.ReadyCondition.Count
 	)
 
-	// Create a context for the server.
-	m.Ctx, m.Cancel = context.WithCancel(ctx)
+	// Initialize the server object.
+	m.init(ctx)
 
 	// Assign the command to the server.
 	m.Cmd = exec.Command(startShell, startScript)
@@ -40,34 +57,10 @@ func (m *BasicWrapper) Start(ctx context.Context) error {
 		m.Stop()
 	}()
 
-	// The number of ready statements required.
-	var readyCount int = 0
-
-	m.Ready = make(chan bool, 1)
 	// Intercept the stdout to check if the server is ready.
 	m.Cmd.Stderr = io.MultiWriter(&m.Stderr, &Interceptor{Forward: os.Stderr})
 	m.Cmd.Stdout = io.MultiWriter(&m.Stdout,
-		NewReadyInterceptor(`For help, type "help"`, readyCount, m.Ready))
-
-	// m.Cmd.Stdout = io.MultiWriter(&m.Stdout, &Interceptor{
-	// 	Forward: os.Stdout,
-	// 	Intercept: func(p []byte) {
-	// 		if readyCount >= 1 {
-	// 			return
-	// 		}
-
-	// 		str := strings.TrimSpace(string(p))
-	// 		// Minecraft Java will say "[Server] Startup Done" once ready.
-	// 		if count := strings.Count(str, `For help, type "help"`); count > 0 {
-	// 			readyCount += count
-	// 			fmt.Printf("Found ready statement: %d \n", readyCount)
-
-	// 			if readyCount <= 1 {
-	// 				fmt.Printf("Moving to READY: %s \n", str)
-	// 				m.Ready = true
-	// 			}
-	// 		}
-	// 	}})
+		NewReadyInterceptor(readyMessage, readyCount, m.Ready))
 
 	// Start the server.
 	err := m.Cmd.Start()
@@ -80,30 +73,22 @@ func (m *BasicWrapper) Start(ctx context.Context) error {
 
 // Wait returns once the server is ready.
 func (m *BasicWrapper) Wait() error {
-	// The maximum time to wait for the server to be ready.
-	// TODO: Review this value.
-	const readyTimeout = 30
+	// Create a timeout for the server to be ready.
+	var readyTimeout = m.Timeouts.ReadyTimeout
 
+	// Return false if the timeout is exeeded.
 	go func() {
 		time.Sleep(readyTimeout * time.Second)
 		m.Ready <- false
 	}()
 
+	// Wait for the server to be ready.
 	rdy := <-m.Ready
 	if rdy {
 		return nil
 	}
 
-	// // Wait for the server to be ready.
-	// for i := 0; i < readyTimeout; i++ {
-	// 	if m.Ready {
-	// 		return nil
-	// 	}
-	// 	time.Sleep(1 * time.Second)
-	// }
-
-	// TODO: Add a more descriptive error message, with stdout and stderr.
-	return fmt.Errorf("server failed to reach ready state within timeout of %d seconds", readyTimeout)
+	return fmt.Errorf("server failed to reach ready state within timeout of %d seconds", int(m.Timeouts.ReadyTimeout))
 }
 
 // Serve serves the server to clients.
@@ -125,8 +110,11 @@ func (m *BasicWrapper) Stop() {
 	}
 	fmt.Println("Stopping the server")
 
-	const stopSoftTimeout = 10
-	const stopHardTimeout = stopSoftTimeout + 5
+	// Define the timeouts for stopping the server.
+	var (
+		stopSoftTimeout = m.Timeouts.StopSoftTimeout
+		stopHardTimeout = m.Timeouts.StopHardTimeout
+	)
 
 	// Release the server process after a timeout.
 	// This is a last resort to prevent a zombie process.
@@ -155,7 +143,7 @@ func (m *BasicWrapper) Stop() {
 	}
 
 	// Check if the server has stopped in the timeout.
-	for i := 0; i < stopSoftTimeout; i++ {
+	for i := 0; i < int(stopSoftTimeout); i++ {
 		// Check if the server has stopped.
 		// ProcessState.Exited() will only return true if
 		// the process was killed or a SIGTERM was sent.
@@ -165,7 +153,7 @@ func (m *BasicWrapper) Stop() {
 		}
 		time.Sleep(1 * time.Second)
 	}
-	fmt.Printf("Server failed to stop gracefully within soft timeout of %d seconds\n", stopSoftTimeout)
+	fmt.Printf("Server failed to stop gracefully within soft timeout of %d seconds\n", int(stopSoftTimeout))
 
 	// If the server has not stopped, forcefully terminate it.
 	if err := m.Cmd.Process.Kill(); err != nil {
@@ -187,10 +175,11 @@ func (m *BasicWrapper) Status() (string, error) {
 
 // Healthy returns if the server is healthy.
 func (m *BasicWrapper) Healthy() (bool, error) {
-	const (
-		healthTimeout = 5
-		healthShell   = "/bin/bash"
-		healthScript  = "/health.sh"
+	// Define the health check variables.
+	var (
+		healthTimeout = m.Timeouts.HealthTimeout
+		healthShell   = m.HealthProccess.Shell
+		healthScript  = m.HealthProccess.Script
 	)
 
 	// Create a context to cancel the health check after a timeout.
