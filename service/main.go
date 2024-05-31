@@ -23,6 +23,7 @@ func Run(wrapper ServerWrapper) {
 	if err != nil {
 		log.Fatalf("Could not connect to Agones sdk: %v", err)
 	}
+	defer s.Shutdown()
 
 	// Start the server.
 	fmt.Println("Starting the server")

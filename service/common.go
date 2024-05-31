@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -46,25 +45,28 @@ func (m *BasicWrapper) Start(ctx context.Context) error {
 
 	// Intercept the stdout to check if the server is ready.
 	m.Cmd.Stderr = io.MultiWriter(&m.Stderr, &Interceptor{Forward: os.Stderr})
-	m.Cmd.Stdout = io.MultiWriter(&m.Stdout, &Interceptor{
-		Forward: os.Stdout,
-		Intercept: func(p []byte) {
-			if readyCount >= 1 {
-				return
-			}
+	m.Cmd.Stdout = io.MultiWriter(&m.Stdout,
+		NewReadyInterceptor(`For help, type "help"`, readyCount, &m.Ready))
 
-			str := strings.TrimSpace(string(p))
-			// Minecraft Java will say "[Server] Startup Done" once ready.
-			if count := strings.Count(str, `For help, type "help"`); count > 0 {
-				readyCount += count
-				fmt.Printf("Found ready statement: %d \n", readyCount)
+	// m.Cmd.Stdout = io.MultiWriter(&m.Stdout, &Interceptor{
+	// 	Forward: os.Stdout,
+	// 	Intercept: func(p []byte) {
+	// 		if readyCount >= 1 {
+	// 			return
+	// 		}
 
-				if readyCount <= 1 {
-					fmt.Printf("Moving to READY: %s \n", str)
-					m.Ready = true
-				}
-			}
-		}})
+	// 		str := strings.TrimSpace(string(p))
+	// 		// Minecraft Java will say "[Server] Startup Done" once ready.
+	// 		if count := strings.Count(str, `For help, type "help"`); count > 0 {
+	// 			readyCount += count
+	// 			fmt.Printf("Found ready statement: %d \n", readyCount)
+
+	// 			if readyCount <= 1 {
+	// 				fmt.Printf("Moving to READY: %s \n", str)
+	// 				m.Ready = true
+	// 			}
+	// 		}
+	// 	}})
 
 	// Start the server.
 	err := m.Cmd.Start()

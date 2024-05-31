@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -35,4 +36,33 @@ func newSignalContext() (context.Context, context.CancelFunc) {
 		cancel()
 	}()
 	return ctx, cancel
+}
+
+// newReadyInterceptor creates a new Interceptor that will check for a ready message in the output.
+// It will send a message to the ready channel when the ready message is found.
+func NewReadyInterceptor(m string, c int, r *bool) *Interceptor {
+	return &Interceptor{
+		Forward: os.Stdout,
+		Intercept: func(p []byte) {
+			if c >= 1 {
+				return
+			}
+
+			str := strings.TrimSpace(string(p))
+			// Checks if the ready message is in the output.
+			if i := strings.Count(str, m); i > 0 {
+				c += i
+				fmt.Printf("Found ready statement: %d \n", c)
+
+				if c <= 1 {
+					fmt.Printf("Moving to READY: %s \n", str)
+					r = Pointer(true)
+				}
+			}
+		}}
+}
+
+// Pointer returns a pointer to the data.
+func Pointer[T any](d T) *T {
+	return &d
 }
