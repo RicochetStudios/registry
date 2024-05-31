@@ -1,8 +1,10 @@
 package service
 
 import (
+	"flag"
 	"fmt"
 	"log"
+	"os"
 
 	sdk "agones.dev/agones/sdks/go"
 )
@@ -48,4 +50,26 @@ func Run(wrapper ServerWrapper) {
 		log.Fatalf("Server failed to serve: %v", err)
 	}
 	fmt.Println("Stopping serve")
+}
+
+// CheckHealth looks for a health flag and checks the health of the server.
+func CheckHealth(wrapper ServerWrapper) {
+	// Define the health flag.
+	health := flag.Bool("health", false, "Check the health of the server")
+	flag.Parse()
+
+	if *health {
+		healthy, err := wrapper.Healthy()
+		if err != nil {
+			fmt.Printf("Health check failed: %v\n", err)
+			os.Exit(1)
+		}
+
+		if healthy {
+			fmt.Println("Server is healthy")
+		} else {
+			fmt.Println("Server is unhealthy")
+		}
+		os.Exit(0)
+	}
 }
