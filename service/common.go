@@ -183,7 +183,7 @@ func (m *BasicWrapper) Healthy() (bool, error) {
 	)
 
 	// Create a context to cancel the health check after a timeout.
-	ctx, cancel := context.WithTimeout(context.Background(), healthTimeout*time.Second)
+	ctx, cancel := context.WithTimeout(m.Ctx, healthTimeout*time.Second)
 	defer cancel()
 
 	// Check if the server is healthy,
