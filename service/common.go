@@ -43,6 +43,7 @@ func (m *BasicWrapper) Start(ctx context.Context) error {
 	// The number of ready statements required.
 	var readyCount int = 0
 
+	m.Ready = make(chan bool, 1)
 	// Intercept the stdout to check if the server is ready.
 	m.Cmd.Stderr = io.MultiWriter(&m.Stderr, &Interceptor{Forward: os.Stderr})
 	m.Cmd.Stdout = io.MultiWriter(&m.Stdout,
