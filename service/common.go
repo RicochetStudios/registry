@@ -81,18 +81,17 @@ func (m *BasicWrapper) Start(ctx context.Context) error {
 func (m *BasicWrapper) Wait() error {
 	// The maximum time to wait for the server to be ready.
 	// TODO: Review this value.
-	const readyTimeout = 90
+	const readyTimeout = 30
 
 	go func() {
 		time.Sleep(readyTimeout * time.Second)
 		m.Ready <- false
 	}()
 
-	if <-m.Ready {
+	rdy := <-m.Ready
+	if rdy {
 		return nil
 	}
-
-	// Wait for the server to be ready.
 
 	// // Wait for the server to be ready.
 	// for i := 0; i < readyTimeout; i++ {
