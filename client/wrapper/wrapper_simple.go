@@ -1,4 +1,4 @@
-package client
+package wrapper
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/RicochetStudios/registry/service/util"
+	"github.com/RicochetStudios/registry/client/util"
 )
 
 // SimpleWrapper is a struct that implements the ServerWrapper interface.

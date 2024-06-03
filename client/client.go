@@ -1,4 +1,4 @@
-package service
+package client
 
 import (
 	"flag"
@@ -6,13 +6,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/RicochetStudios/registry/service/client"
-	"github.com/RicochetStudios/registry/service/util"
+	"github.com/RicochetStudios/registry/client/util"
+	"github.com/RicochetStudios/registry/client/wrapper"
 
 	sdk "agones.dev/agones/sdks/go"
 )
 
-func Run(wrapper client.ServerWrapper) {
+func Run(wrapper wrapper.ServerWrapper) {
 	// TODO: Allow extra arguments here.
 
 	// Create a context that is cancelled when an interrupt or term signal is received.
@@ -57,7 +57,7 @@ func Run(wrapper client.ServerWrapper) {
 }
 
 // CheckHealth looks for a health flag and checks the health of the server.
-func CheckHealth(wrapper client.ServerWrapper) {
+func CheckHealth(wrapper wrapper.ServerWrapper) {
 	// Define the health flag.
 	health := flag.Bool("health", false, "Check the health of the server")
 	flag.Parse()

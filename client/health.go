@@ -1,11 +1,11 @@
-package service
+package client
 
 import (
 	"context"
 	"log"
 	"time"
 
-	"github.com/RicochetStudios/registry/service/client"
+	"github.com/RicochetStudios/registry/client/wrapper"
 
 	sdk "agones.dev/agones/sdks/go"
 )
@@ -13,7 +13,7 @@ import (
 const healthInterval = 2
 
 // doHealth sends the regular Health Pings
-func DoHealth(w client.ServerWrapper, sdk *sdk.SDK, ctx context.Context) {
+func DoHealth(w wrapper.ServerWrapper, sdk *sdk.SDK, ctx context.Context) {
 	tick := time.NewTicker(healthInterval * time.Second)
 	for {
 		// If the context is cancelled, stop the health check.
