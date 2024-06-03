@@ -1,0 +1,19 @@
+apiVersion: agones.dev/v1
+kind: GameServer
+metadata:
+  name: polaris-server
+  game: minecraft-java
+spec:
+  ports:
+    - name: default
+      containerPort: 25565
+  template:
+    spec:
+      containers:
+        - name: game
+          image: us-docker.pkg.dev/agones-images/examples/xonotic-example:1.9
+          resources:
+            requests:
+              memory: 700Mi
+              cpu: 200m
+              # imagePullPolicy: Always  # add for development
