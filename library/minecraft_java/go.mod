@@ -2,7 +2,7 @@ module github.com/RicochetStudios/registry/library/minecraft_java
 
 go 1.22.3
 
-require github.com/RicochetStudios/registry v1.1.1-0.20240531224910-81daf801102b
+require github.com/RicochetStudios/registry v1.1.1-0.20240603171939-f972ada662c6
 
 require (
 	agones.dev/agones v1.40.0 // indirect

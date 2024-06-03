@@ -18,6 +18,8 @@ github.com/RicochetStudios/registry v1.1.1-0.20240531205533-af1c51dd2872 h1:2krH
 github.com/RicochetStudios/registry v1.1.1-0.20240531205533-af1c51dd2872/go.mod h1:5t7b6pV3HYUqwcLQPOs/ZV2cDWjgmRGc3C8+Nrf/4nc=
 github.com/RicochetStudios/registry v1.1.1-0.20240531224910-81daf801102b h1:abXObIDOC8UAmZnKT+Ald+egVoTTKUM7nK77XVdq4ks=
 github.com/RicochetStudios/registry v1.1.1-0.20240531224910-81daf801102b/go.mod h1:5t7b6pV3HYUqwcLQPOs/ZV2cDWjgmRGc3C8+Nrf/4nc=
+github.com/RicochetStudios/registry v1.1.1-0.20240603171939-f972ada662c6 h1:i41YjA/JBT6fDXZavO69VQJHc6WeCzMmuhVyponuvDw=
+github.com/RicochetStudios/registry v1.1.1-0.20240603171939-f972ada662c6/go.mod h1:5t7b6pV3HYUqwcLQPOs/ZV2cDWjgmRGc3C8+Nrf/4nc=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
