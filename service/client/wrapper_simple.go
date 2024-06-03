@@ -1,4 +1,4 @@
-package service
+package client
 
 import (
 	"bytes"
@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"syscall"
 	"time"
+
+	"github.com/RicochetStudios/registry/service/util"
 )
 
 // SimpleWrapper is a struct that implements the ServerWrapper interface.
@@ -58,9 +60,9 @@ func (m *SimpleWrapper) Start(ctx context.Context) error {
 	}()
 
 	// Intercept the stdout to check if the server is ready.
-	m.Cmd.Stderr = io.MultiWriter(&m.Stderr, &Interceptor{Forward: os.Stderr})
+	m.Cmd.Stderr = io.MultiWriter(&m.Stderr, &util.Interceptor{Forward: os.Stderr})
 	m.Cmd.Stdout = io.MultiWriter(&m.Stdout,
-		NewReadyInterceptor(readyMessage, readyCount, m.Ready))
+		util.NewReadyInterceptor(readyMessage, readyCount, m.Ready))
 
 	// Start the server.
 	err := m.Cmd.Start()

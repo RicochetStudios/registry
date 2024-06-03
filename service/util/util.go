@@ -1,4 +1,4 @@
-package service
+package util
 
 import (
 	"context"
@@ -26,7 +26,7 @@ func (i *Interceptor) Write(p []byte) (n int, err error) {
 }
 
 // newSignalContext creates a new context that is cancelled when an interrupt or term signal is received.
-func newSignalContext() (context.Context, context.CancelFunc) {
+func NewSignalContext() (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithCancel(context.Background())
 	go func() {
 		sigChan := make(chan os.Signal, 2)
