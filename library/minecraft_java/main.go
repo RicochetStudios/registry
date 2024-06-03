@@ -1,24 +1,24 @@
 package main
 
 import (
-	"github.com/RicochetStudios/registry/service"
-	"github.com/RicochetStudios/registry/service/client"
+	"github.com/RicochetStudios/registry/client"
+	"github.com/RicochetStudios/registry/client/wrapper"
 )
 
-var gameWrapper = client.SimpleWrapper{
-	StartProcess: client.Process{
+var gameWrapper = wrapper.SimpleWrapper{
+	StartProcess: wrapper.Process{
 		Shell:  "/bin/bash",
 		Script: "/start",
 	},
-	HealthProcess: client.Process{
+	HealthProcess: wrapper.Process{
 		Shell:  "/bin/bash",
 		Script: "/health.sh",
 	},
-	ReadyCondition: client.ReadyCondition{
+	ReadyCondition: wrapper.ReadyCondition{
 		Message: `For help, type "help"`,
 		Count:   1,
 	},
-	Timeouts: client.ServerTimeouts{
+	Timeouts: wrapper.ServerTimeouts{
 		ReadyTimeout:    60,
 		StopSoftTimeout: 10,
 		StopHardTimeout: 15,
@@ -28,8 +28,8 @@ var gameWrapper = client.SimpleWrapper{
 
 func main() {
 	// Check health flag.
-	service.CheckHealth(&gameWrapper)
+	client.CheckHealth(&gameWrapper)
 
 	// Start the main server lifecycle.
-	service.Run(&gameWrapper)
+	client.Run(&gameWrapper)
 }
