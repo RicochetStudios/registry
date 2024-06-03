@@ -28,16 +28,10 @@ type ServerWrapper interface {
 	Backup() error
 }
 
-// StartProccess is a struct that contains the shell and script
-// used to start the server.
-type StartProccess struct {
-	Shell  string
-	Script string
-}
-
-// HealthProccess is a struct that contains the shell and script
-// used to check the health of the server.
-type HealthProccess struct {
+// Process is a struct that contains the shell and script
+// used to run a command.
+// Can be used to start as server or check health of a server.
+type Process struct {
 	Shell  string
 	Script string
 }

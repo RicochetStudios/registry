@@ -11,10 +11,10 @@ import (
 	"time"
 )
 
-// BasicWrapper is a struct that implements the ServerWrapper interface.
+// SimpleWrapper is a struct that implements the ServerWrapper interface.
 // It contains the necessary information to start, stop, and interact with
 // common, basic dedicated video game server.
-type BasicWrapper struct {
+type SimpleWrapper struct {
 	Cmd    *exec.Cmd
 	Ready  chan bool
 	Ctx    context.Context
@@ -22,14 +22,14 @@ type BasicWrapper struct {
 	Stdout bytes.Buffer
 	Stderr bytes.Buffer
 
-	StartProccess  StartProccess
-	HealthProccess HealthProccess
+	StartProcess   Process
+	HealthProcess  Process
 	ReadyCondition ReadyCondition
 	Timeouts       ServerTimeouts
 }
 
 // init initializes the server object.
-func (m *BasicWrapper) init(ctx context.Context) {
+func (m *SimpleWrapper) init(ctx context.Context) {
 	// Create a context for the server.
 	m.Ctx, m.Cancel = context.WithCancel(ctx)
 
@@ -38,10 +38,10 @@ func (m *BasicWrapper) init(ctx context.Context) {
 }
 
 // Start starts the server in the background.
-func (m *BasicWrapper) Start(ctx context.Context) error {
+func (m *SimpleWrapper) Start(ctx context.Context) error {
 	var (
-		startShell   = m.StartProccess.Shell
-		startScript  = m.StartProccess.Script
+		startShell   = m.StartProcess.Shell
+		startScript  = m.StartProcess.Script
 		readyMessage = m.ReadyCondition.Message
 		readyCount   = m.ReadyCondition.Count
 	)
@@ -72,7 +72,7 @@ func (m *BasicWrapper) Start(ctx context.Context) error {
 }
 
 // Wait returns once the server is ready.
-func (m *BasicWrapper) Wait() error {
+func (m *SimpleWrapper) Wait() error {
 	// Create a timeout for the server to be ready.
 	var readyTimeout = m.Timeouts.ReadyTimeout
 
@@ -92,7 +92,7 @@ func (m *BasicWrapper) Wait() error {
 }
 
 // Serve serves the server to clients.
-func (m *BasicWrapper) Serve(context.Context) error {
+func (m *SimpleWrapper) Serve(context.Context) error {
 	// Wait for the server to exit.
 	if err := m.Cmd.Wait(); err != nil {
 		return fmt.Errorf("server crashed: %v", err)
@@ -103,7 +103,7 @@ func (m *BasicWrapper) Serve(context.Context) error {
 
 // Stop will attempt to shutdown the server gracefully.
 // Failing that, it will forcefully terminate.
-func (m *BasicWrapper) Stop() {
+func (m *SimpleWrapper) Stop() {
 	// Check if the server is already stopped.
 	if m.Cmd.ProcessState != nil {
 		return
@@ -169,17 +169,17 @@ func (m *BasicWrapper) Stop() {
 }
 
 // Status returns the status of the server.
-func (m *BasicWrapper) Status() (string, error) {
+func (m *SimpleWrapper) Status() (string, error) {
 	return "OK", nil
 }
 
 // Healthy returns if the server is healthy.
-func (m *BasicWrapper) Healthy() (bool, error) {
+func (m *SimpleWrapper) Healthy() (bool, error) {
 	// Define the health check variables.
 	var (
 		healthTimeout = m.Timeouts.HealthTimeout
-		healthShell   = m.HealthProccess.Shell
-		healthScript  = m.HealthProccess.Script
+		healthShell   = m.HealthProcess.Shell
+		healthScript  = m.HealthProcess.Script
 	)
 
 	// Create a context to cancel the health check after a timeout.
@@ -187,7 +187,7 @@ func (m *BasicWrapper) Healthy() (bool, error) {
 	defer cancel()
 
 	// Check if the server is healthy,
-	// by sending a command to the mc-health binary.
+	// by sending a command to a binary.
 	cmd := exec.CommandContext(ctx, healthShell, healthScript)
 
 	// Run the command.
@@ -204,11 +204,11 @@ func (m *BasicWrapper) Healthy() (bool, error) {
 }
 
 // Logs returns the logs of the server.
-func (m *BasicWrapper) Logs() (string, error) {
+func (m *SimpleWrapper) Logs() (string, error) {
 	return "Logs", nil
 }
 
 // Backup invokes a backup of the server.
-func (m *BasicWrapper) Backup() error {
+func (m *SimpleWrapper) Backup() error {
 	return nil
 }
