@@ -1,6 +1,8 @@
 package main
 
 import (
+	"embed"
+
 	"github.com/RicochetStudios/registry/client"
 	"github.com/RicochetStudios/registry/client/wrapper"
 )
@@ -26,7 +28,16 @@ var gameWrapper = wrapper.SimpleWrapper{
 	},
 }
 
+// embed the settings file into the binary.
+// this means that the files are available as part of the package when imported.
+//
+//go:embed settings.yaml
+var c embed.FS
+
 func main() {
+	// Configure settings.
+	client.ConfigureSettings(&c)
+
 	// Check health flag.
 	client.CheckHealth(&gameWrapper)
 

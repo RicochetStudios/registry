@@ -1,6 +1,7 @@
 package client
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"log"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/RicochetStudios/registry/client/util"
 	"github.com/RicochetStudios/registry/client/wrapper"
+	"gopkg.in/yaml.v2"
 
 	sdk "agones.dev/agones/sdks/go"
 )
@@ -76,4 +78,27 @@ func CheckHealth(wrapper wrapper.ServerWrapper) {
 		}
 		os.Exit(0)
 	}
+}
+
+// ConfigureSettings sets game server environment variables,
+// given an embedding of the settings file.
+func ConfigureSettings(c embed.FS) error {
+	const n = "settings.yaml"
+
+	// Load the settings file contents.
+	f, err := c.ReadFile(n)
+	if err != nil {
+		return fmt.Errorf("failed to load settings file embedding: %s", err)
+	}
+
+	// Create empty Settings to be are target of unmarshalling.
+	var settings map[string]string
+
+	// Unmarshal the YAML file into empty Schema.
+	if err := yaml.Unmarshal(f, &settings); err != nil {
+		return fmt.Errorf("failed to unmarshal settings file: %s", err)
+	}
+
+	// Set the environment variables.
+	return util.RemapEnv(settings)
 }
