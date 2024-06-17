@@ -93,8 +93,8 @@ func ConfigureSettings(c embed.FS) error {
 
 	// Create empty Settings to be are target of unmarshalling.
 	var raw []struct {
-		name  string `yaml:"name"`
-		value string `yaml:"value"`
+		Name  string `yaml:"name"`
+		Value string `yaml:"value"`
 	}
 
 	// Unmarshal the YAML file into empty Schema.
@@ -105,7 +105,7 @@ func ConfigureSettings(c embed.FS) error {
 	// Convert the settings into a map.
 	settings := make(map[string]string)
 	for _, setting := range raw {
-		settings[setting.name] = setting.value
+		settings[setting.Name] = setting.Value
 	}
 
 	// Set the environment variables.
