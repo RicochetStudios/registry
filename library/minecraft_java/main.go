@@ -36,7 +36,7 @@ var c embed.FS
 
 func main() {
 	// Configure settings.
-	client.ConfigureSettings(&c)
+	client.ConfigureSettings(c)
 
 	// Check health flag.
 	client.CheckHealth(&gameWrapper)

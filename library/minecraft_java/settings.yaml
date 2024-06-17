@@ -1,10 +1,10 @@
-- name: GS_VERSION
+- name: VERSION
   value: MINECRAFT_VERSION
-- name: GS_EULA
+- name: EULA
   value: EULA
-- name: GS_MODLOADER
+- name: MODLOADER
   value: TYPE
-- name: GS_PLAYERS
+- name: PLAYERS
   value: MAX_PLAYERS
-- name: GS_NAME
+- name: NAME
   value: MOTD
