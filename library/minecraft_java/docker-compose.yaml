@@ -5,6 +5,7 @@ services:
       - "127.0.0.1:25565:25565"
     environment:
       - EULA=TRUE
+      - MODLOADER=FABRIC
 
   sdk-server:
     image: "us-docker.pkg.dev/agones-images/release/agones-sdk:1.40.0"
