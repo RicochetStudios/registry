@@ -110,7 +110,7 @@ func (m *SimpleWrapper) Stop() {
 	if m.Cmd.ProcessState != nil {
 		return
 	}
-	fmt.Println("Stopping the server")
+	util.InfoMessage("Stopping the server")
 
 	// Define the timeouts for stopping the server.
 	var (
@@ -123,25 +123,25 @@ func (m *SimpleWrapper) Stop() {
 	go func() {
 		time.Sleep(stopHardTimeout * time.Second)
 		if err := m.Cmd.Process.Release(); err != nil {
-			fmt.Printf("failed to release server process: %v\n", err)
+			util.ErrorMessagef("failed to release server process: %v\n", err)
 		}
 	}()
 
 	// Attempt to backup the server before stopping.
 	if err := m.Backup(); err != nil {
-		fmt.Printf("Failed to backup server: %v\n", err)
+		util.ErrorMessagef("Failed to backup server: %v\n", err)
 	} else {
-		fmt.Println("Server backed up successfully")
+		util.InfoMessage("Server backed up successfully")
 	}
 
 	// Attempt to stop the server gracefully
 	// by sending a terminating signal.
 	//
 	// It's important to use a terminating signal,
-	// as most applications recognize this signal and,
+	// as most applications recognize this signal and
 	// the exec cmd will exit correctly.
 	if err := m.Cmd.Process.Signal(syscall.SIGTERM); err != nil {
-		fmt.Printf("Failed to stop server gracefully: %v\n", err)
+		util.ErrorMessagef("Failed to stop server gracefully: %v\n", err)
 	}
 
 	// Check if the server has stopped in the timeout.
@@ -150,24 +150,25 @@ func (m *SimpleWrapper) Stop() {
 		// ProcessState.Exited() will only return true if
 		// the process was killed or a SIGTERM was sent.
 		if m.Cmd.ProcessState != nil && m.Cmd.ProcessState.Exited() {
-			fmt.Printf("Server stopped gracefully after %d seconds\n", i)
+			util.InfoMessagef("Server stopped gracefully after %d seconds\n", i)
 			return
 		}
 		time.Sleep(1 * time.Second)
 	}
-	fmt.Printf("Server failed to stop gracefully within soft timeout of %d seconds\n", int(stopSoftTimeout))
+	util.ErrorMessagef(
+		"Server failed to stop gracefully within soft timeout of %d seconds\n", int(stopSoftTimeout))
 
 	// If the server has not stopped, forcefully terminate it.
 	if err := m.Cmd.Process.Kill(); err != nil {
-		fmt.Printf("Failed to stop server forcefully: %v\n", err)
+		util.ErrorMessagef("Failed to stop server forcefully: %v\n", err)
 	} else {
 		// Wait for the server to exit.
 		m.Cmd.Wait()
-		fmt.Println("Server stopped forcefully")
+		util.InfoMessage("Server stopped forcefully")
 		return
 	}
 
-	fmt.Printf("Releasing server resources\n")
+	util.InfoMessage("Releasing server resources\n")
 }
 
 // Status returns the status of the server.

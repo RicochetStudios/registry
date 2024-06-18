@@ -32,7 +32,7 @@ func NewSignalContext() (context.Context, context.CancelFunc) {
 		sigChan := make(chan os.Signal, 2)
 		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 		sig := <-sigChan
-		fmt.Printf("Received signal: '%s'\n", sig.String())
+		InfoMessage("Received signal: '%s'\n" + sig.String())
 		cancel()
 	}()
 	return ctx, cancel
@@ -55,10 +55,10 @@ func NewReadyInterceptor(m string, c int, r chan bool) *Interceptor {
 			// Checks if the ready message is in the output.
 			if i := strings.Count(str, m); i > 0 {
 				counter += i
-				fmt.Printf("Found ready statement: %d \n", counter)
+				InfoMessage("Found ready statement: %d \n" + fmt.Sprint(counter))
 
 				if counter >= c {
-					fmt.Printf("Moving to READY: %s \n", str)
+					InfoMessage("Moving to READY: %s \n" + str)
 					r <- true
 				}
 			}
