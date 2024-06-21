@@ -1,7 +1,7 @@
 agones.dev/agones v1.40.0 h1:G4l20gRSIPDkBUtBkL6GIpzCMRmGcOsi7DbZlyuEAIQ=
 agones.dev/agones v1.40.0/go.mod h1:ZT5YGGsA2swP6JsqidO2cj0c93KWq4ZZrmPfwZTLRZk=
-github.com/RicochetStudios/registry v1.1.1-0.20240617132158-7009fb2a8544 h1:FP+87S42Iqpw/LMFpOtxWhVM53/kmVnfgV+r5mfu7Go=
-github.com/RicochetStudios/registry v1.1.1-0.20240617132158-7009fb2a8544/go.mod h1:ttqfbfRS71/MwSet3Kv4KP3AjV0fHZJsY+U/UQv+Nag=
+github.com/RicochetStudios/registry v1.1.1-0.20240618090502-6f356e2ef6a3 h1:JFewaL7UefZEcNvH6W6PyQvKM7kbbgS5ui9U/ev+CFc=
+github.com/RicochetStudios/registry v1.1.1-0.20240618090502-6f356e2ef6a3/go.mod h1:ttqfbfRS71/MwSet3Kv4KP3AjV0fHZJsY+U/UQv+Nag=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/glog v1.1.0 h1:/d3pCKDPWNnvIWe0vVUpNP32qc8U3PDVxySP/y360qE=
