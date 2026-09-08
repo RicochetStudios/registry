@@ -1,5 +1,10 @@
 package library
 
+type GameSetting struct {
+	Name  string `yaml:"name"`
+	Value string `yaml:"value"`
+}
+
 var basePath string
 
 func init() {

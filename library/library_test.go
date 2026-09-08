@@ -1,6 +1,7 @@
 package library
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -28,18 +29,21 @@ func TestGetEnvWithDefault(t *testing.T) {
 // TestGetGameSettings tests the GetGameSettings function.
 func TestGetGameSettings(t *testing.T) {
 	matrix := []struct {
-		name  string
-		input string
-		want GameSettings{}
+		name    string
+		input   string
+		want    []GameSetting
 		wantErr error
 	}{
-		{"empty", "", },
-		{"non-empty", "minecraft_java", GameSettings{
-			Name
-		}},
-		{"incorrect", "not_a_game", nil},
+		{"empty", "", []GameSetting{}, fmt.Errorf("game not found")},
+		{"non-empty", "minecraft_java", []GameSetting{
+			{Name: "VERSION", Value: "MINECRAFT_VERSION"},
+			{Name: "EULA", Value: "EULA"},
+			{Name: "MODLOADER", Value: "TYPE"},
+			{Name: "PLAYERS", Value: "MAX_PLAYERS"},
+			{Name: "NAME", Value: "MOTD"},
+		}, nil},
+		{"incorrect", "not_a_game", []GameSetting{}, nil},
 	}
-
 
 	t.Run("empty", func(t *testing.T) {
 		got, err := GetGameSettings("")
